@@ -91,11 +91,11 @@ func downloadOrView(writer http.ResponseWriter, path string) {
     // 检查是否是目录
     if stat.IsDir() {
         // 展示文件列表
-        err = viewFileList(writer, path)
-        if err == nil {
-            err = ErrServiceOver
-        }
-        serviceError(err)
+        // err = viewFileList(writer, path)
+        // if err == nil {
+        //     err = ErrServiceOver
+        // }
+        // serviceError(err)
     } else {
         // TODO: 展示文件摘要
         fileWriteTo(writer, path)
