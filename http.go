@@ -1,8 +1,10 @@
 package main
 
 import (
+    "embed"
     "errors"
     "fmt"
+    "io/fs"
     "log"
     "net/http"
     "net/url"
@@ -127,11 +129,24 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
     downloadOrView(writer, path)
 }
 
+//go:embed static
+var staticEmbedFs embed.FS
+
+// 注册 HTTP 处理过程
+func registerHttpHandles() {
+    // 注册静态页面
+    staticFS, err := fs.Sub(staticEmbedFs, "static")
+    if err != nil {
+        log.Panicln(err)
+    }
+    http.Handle("/", http.FileServer(http.FS(staticFS)))
+}
+
 func StartServer(port int) {
-    handler := &Handler{}
+    registerHttpHandles()
     server := &http.Server{
         Addr:           fmt.Sprintf(":%d", port),
-        Handler:        handler,
+        Handler:        http.DefaultServeMux,
         ReadTimeout:    30 * time.Second,
         MaxHeaderBytes: 1 << 20,
     }
