@@ -299,6 +299,10 @@ Function Prepare {
     If ($Publish -or $ForcePackage) {
         $UselessOutput = $(New-Item -Force -ItemType Directory -Path "$ScriptParentPath/$DistDirName")
     }
+    # 若当前处于发布模式，则执行 Go Generate
+    If ($Publish) {
+        go generate ./...
+    }
     # 进入源代码目录
     If ($StandardMode) {
         Set-Location -Path "$SourceDirPath/$ModuleName"
