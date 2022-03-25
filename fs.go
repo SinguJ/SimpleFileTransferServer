@@ -99,3 +99,94 @@ func fileWriteTo(writer http.ResponseWriter, path string) {
         log.Panicln(err)
     }
 }
+
+/** * 结构体 *  **/
+
+// TargetType 目标类型
+type TargetType int
+
+const (
+    // TypeFile 文件
+    TypeFile TargetType = 0
+    // TypeDir 目录（文件夹）
+    TypeDir = 1
+)
+
+// Metadata 元数据
+type Metadata interface {
+    // GetName 获取文件（夹）名称
+    GetName() string
+    // GetPath 获取文件（夹）路径
+    GetPath() string
+    // GetType 获取目标类型
+    GetType() TargetType
+    // AsFile 作为文件
+    AsFile() *File
+    // AsDir 作为目录
+    AsDir() *Directory
+}
+
+// MetadataImpl 元数据
+type MetadataImpl struct {
+    // 文件（夹）名称
+    Name string `json:"name"`
+    // 文件（夹）路径
+    Path string `json:"path"`
+
+    // 目标类型
+    Type TargetType `json:"type"`
+}
+
+func (m *MetadataImpl) GetName() string {
+    return m.Name
+}
+
+func (m *MetadataImpl) GetPath() string {
+    return m.Path
+}
+
+func (m *MetadataImpl) GetType() TargetType {
+    return m.Type
+}
+
+func (m *MetadataImpl) AsFile() *File {
+    panic("implement me")
+}
+
+func (m *MetadataImpl) AsDir() *Directory {
+    panic("implement me")
+}
+
+// File 文件
+type File struct {
+    MetadataImpl
+
+    // 文件大小
+    Size int64 `json:"size"`
+    // 文件类型
+    Filetype string `json:"filetype"`
+}
+
+func (f *File) AsFile() *File {
+    return f
+}
+
+func (f *File) AsDir() *Directory {
+    panic("wrong call")
+}
+
+// Directory 目录（文件夹）
+type Directory struct {
+    MetadataImpl
+
+    // 子文件列表
+    Files []Metadata `json:"files"`
+}
+
+func (d *Directory) AsFile() *File {
+    panic("wrong call")
+}
+
+func (d *Directory) AsDir() *Directory {
+    return d
+}
