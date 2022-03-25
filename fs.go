@@ -5,6 +5,7 @@ import (
     "log"
     "net/http"
     "os"
+    "path"
     "path/filepath"
     "strconv"
 )
@@ -29,8 +30,14 @@ func getAbsPath(p string) string {
 func getMetadata(p string, recursion int) (Metadata, error) {
     // 计算完整路径
     realPath := filepath.Join(rootPath, p)
+    var name string
+    if p == "/" {
+        name = ""
+    } else {
+        name = path.Base(p)
+    }
     metadataImpl := MetadataImpl{
-        Name: filepath.Base(realPath),
+        Name: name,
         Path: p,
     }
     // 获取文件（或目录）的状态
