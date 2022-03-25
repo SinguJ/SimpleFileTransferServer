@@ -52,7 +52,7 @@ func getMetadata(p string, recursion int) (Metadata, error) {
         return &File{
             metadataImpl,
             stat.Size(),
-            filepath.Ext(metadataImpl.Name),
+            path.Ext(metadataImpl.Name),
         }, nil
     }
     // 构建子文件的元数据
@@ -73,7 +73,7 @@ func getMetadata(p string, recursion int) (Metadata, error) {
         }
         files = make([]Metadata, len(entries))
         for index, entry := range entries {
-            subFilepath := filepath.Join(p, entry.Name())
+            subFilepath := path.Join(p, entry.Name())
             files[index], err = getMetadata(subFilepath, subRecursion)
             if err != nil {
                 return nil, err
