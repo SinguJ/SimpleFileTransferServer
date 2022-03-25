@@ -1,7 +1,6 @@
 package main
 
 import (
-    "errors"
     "io"
     "log"
     "net/http"
@@ -20,34 +19,8 @@ func init() {
     }
 }
 
-var ErrNotDir = errors.New("指定的目录不是文件夹")
-
 func getAbsPath(path string) string {
     return filepath.Join(rootPath, path)
-}
-
-// 判断文件是否是文件夹
-func isFile(path string) bool {
-    var err error
-    // 获取路径的状态
-    stat, err := os.Stat(path)
-    if err != nil {
-        return false
-    }
-    // 检查是否是目录
-    return !stat.IsDir()
-}
-
-// 判断文件是否是文件夹
-func isDir(path string) bool {
-    var err error
-    // 获取路径的状态
-    stat, err := os.Stat(path)
-    if err != nil {
-        return false
-    }
-    // 检查是否是目录
-    return stat.IsDir()
 }
 
 // 获取指定路径的元数据
