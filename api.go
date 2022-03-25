@@ -133,3 +133,13 @@ func apiHandle(handle func(http.ResponseWriter, *http.Request)) func(http.Respon
         handle(w, r)
     }
 }
+
+// Response 接口响应体
+type Response struct {
+    // 状态码
+    Code int `json:"code"`
+    // 消息
+    Message string `json:"message"`
+    // 结果
+    Result interface{} `json:"result"`
+}
