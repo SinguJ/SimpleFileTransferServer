@@ -22,11 +22,6 @@ var ErrServiceComplete = errors.New("服务完成")
 // ErrNotFound 找不到指定的文件或文件夹
 var ErrNotFound = errors.New("找不到指定的文件或文件夹")
 
-// 500
-func serviceError(err interface{}) {
-    panic(err)
-}
-
 // 读取请求的文件路径
 func readTargetPath(r *http.Request, prefix string) (targetPath string, err error) {
     // 解析 URI
@@ -70,12 +65,12 @@ func download(writer http.ResponseWriter, p string) {
         if os.IsNotExist(err) {
             panic(ErrNotFound)
         }
-        serviceError(err)
+        panic(err)
     }
     // 检查是否是目录
     if stat.IsDir() {
         // TODO: 压缩下载
-        serviceError("暂不支持下载文件夹")
+        panic("暂不支持下载文件夹")
     } else {
         fileWriteTo(writer, p)
     }
@@ -91,7 +86,7 @@ func show(writer http.ResponseWriter, p string) {
         if os.IsNotExist(err) {
             panic(ErrNotFound)
         }
-        serviceError(err)
+        panic(err)
     }
     // 检查是否是目录
     if stat.IsDir() {
@@ -102,7 +97,7 @@ func show(writer http.ResponseWriter, p string) {
         }
     } else {
         // TODO: 展示文件摘要
-        serviceError("暂不支持查看文件信息")
+        panic("暂不支持查看文件信息")
     }
 }
 
@@ -117,12 +112,12 @@ func downloadOrView(writer http.ResponseWriter, p string) {
         if os.IsNotExist(err) {
             panic(ErrNotFound)
         }
-        serviceError(err)
+        panic(err)
     }
     // 检查是否是目录
     if stat.IsDir() {
         // 不允许下载文件夹
-        serviceError("暂不支持下载文件夹")
+        panic("暂不支持下载文件夹")
     } else {
         // TODO: 展示文件摘要
         fileWriteTo(writer, p)
@@ -153,7 +148,7 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
     // show(writer, request.RequestURI)
     p, err := readTargetPath(request, "/api/download/")
     if err != nil {
-        serviceError(err)
+        panic(err)
     }
     downloadOrView(writer, p)
 }
