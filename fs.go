@@ -41,7 +41,7 @@ func getMetadata(p string, recursion int) (Metadata, error) {
         Path: p,
     }
     // 获取文件（或目录）的状态
-    stat, err := os.Stat(p)
+    stat, err := os.Stat(realPath)
     if err != nil {
         return nil, err
     }
