@@ -132,21 +132,22 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 //go:embed static
 var staticEmbedFs embed.FS
 
-// 注册 HTTP 处理过程
-func registerHttpHandles() {
+// 服务
+var serv = http.NewServeMux()
+
+func init() {
     // 注册静态页面
     staticFS, err := fs.Sub(staticEmbedFs, "static")
     if err != nil {
         log.Panicln(err)
     }
-    http.Handle("/", http.FileServer(http.FS(staticFS)))
+    serv.Handle("/", http.FileServer(http.FS(staticFS)))
 }
 
 func StartServer(port int) {
-    registerHttpHandles()
     server := &http.Server{
         Addr:           fmt.Sprintf(":%d", port),
-        Handler:        http.DefaultServeMux,
+        Handler:        serv,
         ReadTimeout:    30 * time.Second,
         MaxHeaderBytes: 1 << 20,
     }
