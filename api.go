@@ -16,8 +16,8 @@ func init() {
     serv.Handle("/api/download/", &Handler{})
 }
 
-// ErrServiceOver 服务结束
-var ErrServiceOver = errors.New("服务结束")
+// ErrServiceComplete 服务完成
+var ErrServiceComplete = errors.New("服务完成")
 
 // 404
 func notFound(writer http.ResponseWriter, p string) {
@@ -25,7 +25,7 @@ func notFound(writer http.ResponseWriter, p string) {
     if err != nil {
         log.Println(err)
     }
-    panic(ErrServiceOver)
+    panic(ErrServiceComplete)
 }
 
 // 500
@@ -127,12 +127,8 @@ func downloadOrView(writer http.ResponseWriter, p string) {
     }
     // 检查是否是目录
     if stat.IsDir() {
-        // 展示文件列表
-        // err = viewFileList(writer, p)
-        // if err == nil {
-        //     err = ErrServiceOver
-        // }
-        // serviceError(err)
+        // 不允许下载文件夹
+        serviceError("暂不支持下载文件夹")
     } else {
         // TODO: 展示文件摘要
         fileWriteTo(writer, p)
@@ -144,7 +140,7 @@ type Handler struct{}
 func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
     defer func() {
         err := recover()
-        if err != nil && err != ErrServiceOver {
+        if err != nil && err != ErrServiceComplete {
             _, _err := fmt.Fprintln(writer, "程序错误：", err)
             if _err != nil {
                 log.Println(_err)
