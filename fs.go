@@ -19,22 +19,22 @@ func init() {
     }
 }
 
-func getAbsPath(path string) string {
-    return filepath.Join(rootPath, path)
+func getAbsPath(p string) string {
+    return filepath.Join(rootPath, p)
 }
 
 // 获取指定路径的元数据
 // path: 目标的路径
 // recursion: 递归层级（若目标为文件夹，则该项控制向下读取多少层目录信息，0 表示不读取，1 表示只读取当前目录的子文件，-1 表示全部读取）
-func getMetadata(path string, recursion int) (Metadata, error) {
+func getMetadata(p string, recursion int) (Metadata, error) {
     // 计算完整路径
-    realPath := filepath.Join(rootPath, path)
+    realPath := filepath.Join(rootPath, p)
     metadataImpl := MetadataImpl{
         Name: filepath.Base(realPath),
-        Path: path,
+        Path: p,
     }
     // 获取文件（或目录）的状态
-    stat, err := os.Stat(path)
+    stat, err := os.Stat(p)
     if err != nil {
         return nil, err
     }
@@ -66,7 +66,7 @@ func getMetadata(path string, recursion int) (Metadata, error) {
         }
         files = make([]Metadata, len(entries))
         for index, entry := range entries {
-            subFilepath := filepath.Join(path, entry.Name())
+            subFilepath := filepath.Join(p, entry.Name())
             files[index], err = getMetadata(subFilepath, subRecursion)
             if err != nil {
                 return nil, err
@@ -81,9 +81,9 @@ func getMetadata(path string, recursion int) (Metadata, error) {
     }, nil
 }
 
-func fileWriteTo(writer http.ResponseWriter, path string) {
+func fileWriteTo(writer http.ResponseWriter, p string) {
     // 计算完整路径
-    _path := filepath.Join(rootPath, path)
+    _path := filepath.Join(rootPath, p)
 
     _, filename := filepath.Split(_path)
 
