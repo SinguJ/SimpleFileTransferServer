@@ -13,15 +13,7 @@ import (
 
 func init() {
     // 注册下载接口
-    serv.HandleFunc("/api/download/", fileHandle("/api/download/", func(w http.ResponseWriter, _ *http.Request, p string, stat os.FileInfo) {
-        // 检查是否是目录
-        if stat.IsDir() {
-            panic("暂不支持下载文件夹")
-        } else {
-            // 写出文件
-            fileWriteTo(w, p)
-        }
-    }))
+    serv.HandleFunc("/api/download/", fileHandle("/api/download/", download))
 }
 
 // ErrServiceComplete 服务完成
@@ -64,23 +56,13 @@ func readTargetPath(r *http.Request, prefix string) (targetPath string, err erro
 }
 
 // 下载
-func download(writer http.ResponseWriter, p string) {
-    var err error
-
-    // 获取路径的状态
-    stat, err := os.Stat(p)
-    if err != nil {
-        if os.IsNotExist(err) {
-            panic(ErrNotFound)
-        }
-        panic(err)
-    }
+func download(w http.ResponseWriter, _ *http.Request, p string, stat os.FileInfo) {
     // 检查是否是目录
     if stat.IsDir() {
-        // TODO: 压缩下载
         panic("暂不支持下载文件夹")
     } else {
-        fileWriteTo(writer, p)
+        // 写出文件
+        fileWriteTo(w, p)
     }
 }
 
@@ -106,29 +88,6 @@ func show(writer http.ResponseWriter, p string) {
     } else {
         // TODO: 展示文件摘要
         panic("暂不支持查看文件信息")
-    }
-}
-
-// 临时解决方法
-func downloadOrView(writer http.ResponseWriter, p string) {
-    var err error
-    _path := getAbsPath(p)
-
-    // 获取路径的状态
-    stat, err := os.Stat(_path)
-    if err != nil {
-        if os.IsNotExist(err) {
-            panic(ErrNotFound)
-        }
-        panic(err)
-    }
-    // 检查是否是目录
-    if stat.IsDir() {
-        // 不允许下载文件夹
-        panic("暂不支持下载文件夹")
-    } else {
-        // TODO: 展示文件摘要
-        fileWriteTo(writer, p)
     }
 }
 
