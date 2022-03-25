@@ -13,7 +13,17 @@ import (
 
 func init() {
     // 注册下载接口
-    serv.Handle("/api/download/", &Handler{})
+    serv.HandleFunc("/api/download/", apiHandle(func(writer http.ResponseWriter, request *http.Request) {
+        // if strings.HasPrefix(request.RequestURI, "/download") {
+        //     download(writer, request.RequestURI[9:])
+        // }
+        // show(writer, request.RequestURI)
+        p, err := readTargetPath(request, "/api/download/")
+        if err != nil {
+            panic(err)
+        }
+        downloadOrView(writer, p)
+    }))
 }
 
 // ErrServiceComplete 服务完成
@@ -124,31 +134,23 @@ func downloadOrView(writer http.ResponseWriter, p string) {
     }
 }
 
-type Handler struct{}
-
-func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-    defer func() {
-        err := recover()
-        if err != nil {
-            switch err {
-            case ErrServiceComplete:
-                return
-            default:
-                _, _err := fmt.Fprintln(writer, "程序错误：", err)
-                if _err != nil {
-                    log.Println(_err)
+// 接口处理装饰器函数
+func apiHandle(handle func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        defer func() {
+            err := recover()
+            if err != nil {
+                switch err {
+                case ErrServiceComplete:
+                    return
+                default:
+                    _, _err := fmt.Fprintln(w, "程序错误：", err)
+                    if _err != nil {
+                        log.Println(_err)
+                    }
                 }
             }
-        }
-    }()
-
-    // if strings.HasPrefix(request.RequestURI, "/download") {
-    //     download(writer, request.RequestURI[9:])
-    // }
-    // show(writer, request.RequestURI)
-    p, err := readTargetPath(request, "/api/download/")
-    if err != nil {
-        panic(err)
+        }()
+        handle(w, r)
     }
-    downloadOrView(writer, p)
 }
