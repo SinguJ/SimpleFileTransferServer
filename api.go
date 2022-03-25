@@ -1,6 +1,7 @@
 package main
 
 import (
+    "encoding/json"
     "errors"
     "fmt"
     "log"
@@ -14,6 +15,8 @@ import (
 func init() {
     // 注册下载接口
     serv.HandleFunc("/api/download/", fileHandle("/api/download/", download))
+    // 注册文件信息接口
+    serv.HandleFunc("/api/metadata/", fileHandle("/api/metadata/", metadata))
 }
 
 // ErrServiceComplete 服务完成
@@ -66,29 +69,15 @@ func download(w http.ResponseWriter, _ *http.Request, p string, stat os.FileInfo
     }
 }
 
-// 展示文件或目录
-func show(writer http.ResponseWriter, p string) {
-    var err error
-
-    // 获取路径的状态
-    stat, err := os.Stat(p)
+// 展示文件或文件夹信息
+func metadata(w http.ResponseWriter, _ *http.Request, p string, _ os.FileInfo) {
+    // 读取元数据
+    metadata, err := getMetadata(p, 1)
     if err != nil {
-        if os.IsNotExist(err) {
-            panic(ErrNotFound)
-        }
         panic(err)
     }
-    // 检查是否是目录
-    if stat.IsDir() {
-        // 展示文件列表
-        _, err := getFiles(p)
-        if err != nil {
-            return
-        }
-    } else {
-        // TODO: 展示文件摘要
-        panic("暂不支持查看文件信息")
-    }
+    // 响应 JSON 数据
+    success(w, metadata)
 }
 
 // 文件处理装饰器函数
