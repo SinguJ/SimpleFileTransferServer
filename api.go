@@ -143,3 +143,33 @@ type Response struct {
     // 结果
     Result interface{} `json:"result"`
 }
+
+// 成功
+func success(w http.ResponseWriter, result interface{}) {
+    responseJsonData(w, 0, "", result)
+}
+
+// 失败
+func fail(w http.ResponseWriter, code int, msg interface{}) {
+    responseJsonData(w, code, fmt.Sprint(msg), nil)
+}
+
+// 响应 JSON 数据
+func responseJsonData(w http.ResponseWriter, code int, message string, result interface{}) {
+    resp := &Response{
+        Code:    code,
+        Message: message,
+        Result:  result,
+    }
+    data, err := json.Marshal(resp)
+    if err != nil {
+        log.Println(message)
+        log.Println(err)
+        data = []byte(`{"code": -1, "message": "服务异常", "result": null}`)
+    }
+    _, err = w.Write(data)
+    if err != nil {
+        log.Println(message)
+        log.Println(err)
+    }
+}
