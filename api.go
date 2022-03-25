@@ -140,10 +140,15 @@ type Handler struct{}
 func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
     defer func() {
         err := recover()
-        if err != nil && err != ErrServiceComplete {
-            _, _err := fmt.Fprintln(writer, "程序错误：", err)
-            if _err != nil {
-                log.Println(_err)
+        if err != nil {
+            switch err {
+            case ErrServiceComplete:
+                return
+            default:
+                _, _err := fmt.Fprintln(writer, "程序错误：", err)
+                if _err != nil {
+                    log.Println(_err)
+                }
             }
         }
     }()
