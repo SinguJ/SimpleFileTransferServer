@@ -19,14 +19,8 @@ func init() {
 // ErrServiceComplete 服务完成
 var ErrServiceComplete = errors.New("服务完成")
 
-// 404
-func notFound(writer http.ResponseWriter, p string) {
-    _, err := fmt.Fprintln(writer, "找不到指定的文件或目录：", p[1:])
-    if err != nil {
-        log.Println(err)
-    }
-    panic(ErrServiceComplete)
-}
+// ErrNotFound 找不到指定的文件或文件夹
+var ErrNotFound = errors.New("找不到指定的文件或文件夹")
 
 // 500
 func serviceError(err interface{}) {
@@ -74,7 +68,7 @@ func download(writer http.ResponseWriter, p string) {
     stat, err := os.Stat(p)
     if err != nil {
         if os.IsNotExist(err) {
-            notFound(writer, p)
+            panic(ErrNotFound)
         }
         serviceError(err)
     }
@@ -95,7 +89,7 @@ func show(writer http.ResponseWriter, p string) {
     stat, err := os.Stat(p)
     if err != nil {
         if os.IsNotExist(err) {
-            notFound(writer, p)
+            panic(ErrNotFound)
         }
         serviceError(err)
     }
@@ -121,7 +115,7 @@ func downloadOrView(writer http.ResponseWriter, p string) {
     stat, err := os.Stat(_path)
     if err != nil {
         if os.IsNotExist(err) {
-            notFound(writer, p)
+            panic(ErrNotFound)
         }
         serviceError(err)
     }
