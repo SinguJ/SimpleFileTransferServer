@@ -13,16 +13,14 @@ import (
 
 func init() {
     // 注册下载接口
-    serv.HandleFunc("/api/download/", apiHandle(func(writer http.ResponseWriter, request *http.Request) {
-        // if strings.HasPrefix(request.RequestURI, "/download") {
-        //     download(writer, request.RequestURI[9:])
-        // }
-        // show(writer, request.RequestURI)
-        p, err := readTargetPath(request, "/api/download/")
-        if err != nil {
-            panic(err)
+    serv.HandleFunc("/api/download/", fileHandle("/api/download/", func(w http.ResponseWriter, _ *http.Request, p string, stat os.FileInfo) {
+        // 检查是否是目录
+        if stat.IsDir() {
+            panic("暂不支持下载文件夹")
+        } else {
+            // 写出文件
+            fileWriteTo(w, p)
         }
-        downloadOrView(writer, p)
     }))
 }
 
@@ -132,6 +130,28 @@ func downloadOrView(writer http.ResponseWriter, p string) {
         // TODO: 展示文件摘要
         fileWriteTo(writer, p)
     }
+}
+
+// 文件处理装饰器函数
+func fileHandle(uriPrefix string, handle func(http.ResponseWriter, *http.Request, string, os.FileInfo)) func(http.ResponseWriter, *http.Request) {
+    return apiHandle(func(w http.ResponseWriter, r *http.Request) {
+        // 读取请求的目标路径
+        p, err := readTargetPath(r, uriPrefix)
+        if err != nil {
+            panic(err)
+        }
+        // 获取目标文件在文件系统中的真实路径
+        realPath := getAbsPath(p)
+        // 检查文件状态
+        stat, err := os.Stat(realPath)
+        if err != nil {
+            if os.IsNotExist(err) {
+                panic(ErrNotFound)
+            }
+            panic(err)
+        }
+        handle(w, r, p, stat)
+    })
 }
 
 // 接口处理装饰器函数
