@@ -110,12 +110,15 @@ func apiHandle(handle func(http.ResponseWriter, *http.Request)) func(http.Respon
             if err != nil {
                 switch err {
                 case ErrServiceComplete:
-                    return
+                    // 正常结束的服务
+                    success(w, nil)
+                case ErrNotFound:
+                    // 找不到文件的错误
+                    fail(w, 404, ErrNotFound)
                 default:
-                    _, _err := fmt.Fprintln(w, "程序错误：", err)
-                    if _err != nil {
-                        log.Println(_err)
-                    }
+                    // 其他错误
+                    log.Println(err)
+                    fail(w, 500, err)
                 }
             }
         }()
